@@ -12,7 +12,8 @@ namespace spws {
         public:
             body parse(const std::string& path);
         private:
-            std::vector<std::string>getDumb(const std::string& path, char delim=' ');
+            types::config getConfig(const std::string& path);
+            std::vector<std::string>getDumb(const std::string& path);
             types::section addSection(const std::string& name, std::fstream& in);
         };
     }

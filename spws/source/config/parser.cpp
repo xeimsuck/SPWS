@@ -4,12 +4,42 @@
 #include <stack>
 #include <unordered_set>
 #include <format>
+#include <climits>
 
 using namespace spws::config;
 
 body parser::parse(const std::string &path) {
-    auto dumb = getDumb(path);
+    types::config config = getConfig(path);
 
+    body body;
+
+    auto itBody = config.end();
+    for(auto it = config.begin(); it!=config.end(); ++it){
+        if(it->first=="body") {
+            itBody = it;
+            continue;
+        }
+        if(it->first=="server"){
+            body::server server;
+            for(decltype(auto) itServ : it->second){
+                if(itServ.first == "port") {
+                    auto port = std::stoi(itServ.second);
+                    if(port<0 || port>USHRT_MAX) throw std::runtime_error( std::format("ERROR: Type port in range of 0 to {}", USHRT_MAX));
+                    server.setPort(static_cast<ushort>(port));
+                }
+            }
+            body.addServer(server);
+        }
+    }
+    if(itBody==config.end()) throw std::runtime_error("ERROR: No \"body\" section");
+
+
+
+    return body;
+}
+
+types::config parser::getConfig(const std::string &path) {
+    auto dumb = getDumb(path);
     types::config config;
     config.emplace_back("global", types::entries{});
     std::stack<types::config::iterator> blocks;
@@ -20,6 +50,7 @@ body parser::parse(const std::string &path) {
         const std::string word = dumb[i++];
         if(word.empty()) continue;
         if(word=="}") {
+            if(blocks.empty()) throw std::runtime_error("ERROR: Unnecessary braces \'}\'");
             blocks.pop();
             continue;
         }
@@ -31,17 +62,14 @@ body parser::parse(const std::string &path) {
             config.emplace_back(word, types::entries());
             blocks.push(config.end()-1);
         } else {
-            throw std::runtime_error(std::format("ERROR: Unknown operator (Var:{}): {}", i, oper));
+            throw std::runtime_error(std::format("ERROR: Unknown operator: {}",  oper));
         }
     }
-
-    body body;
-
-
-    return body;
+    if(blocks.size()!=1) throw std::runtime_error("ERROR: Unnecessary braces \'{\'");
+    return config;
 }
 
-std::vector<std::string> parser::getDumb(const std::string &path, char delim) {
+std::vector<std::string> parser::getDumb(const std::string &path) {
     std::fstream in(path, std::ios::in);
     if(!in.is_open()) throw std::runtime_error(std::string("ERROR: Could not open configuration file (") + path + ")");
 
