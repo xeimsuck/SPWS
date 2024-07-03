@@ -10,11 +10,11 @@ namespace spws {
     namespace config {
         class parser {
         public:
-            body parse(const std::string& path);
+            static body parse(const std::string& path);
         private:
-            types::config getConfig(const std::string& path);
-            std::vector<std::string>getDumb(const std::string& path);
-            types::section addSection(const std::string& name, std::fstream& in);
+            static types::config getConfig(const std::string& path);
+            static body getBody(const types::config& config);
+            static std::vector<std::string>getDumb(const std::string& path);
         };
     }
 }

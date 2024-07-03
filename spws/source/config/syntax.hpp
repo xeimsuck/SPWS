@@ -13,6 +13,9 @@ namespace spws {
             using section = std::pair<std::string, entries>;
             using config = std::vector<section>;
         }
+        enum class protocols {
+            tcp, udp
+        };
     }
 }
 

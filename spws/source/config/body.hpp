@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <string>
+#include "syntax.hpp"
 
 namespace spws {
     namespace config {
@@ -10,18 +11,23 @@ namespace spws {
         public:
             class server{
             public:
-                server(unsigned short port = 80);
+                server(ushort port = 80, protocols protocol = protocols::tcp);
+
             public:
-                [[nodiscard]]short getPort() const noexcept;
-                void setPort(short port) noexcept;
+                [[nodiscard]]ushort getPort() const noexcept;
+                void setPort(ushort port) noexcept;
+
+                [[nodiscard]]protocols getProtocol() const noexcept;
+                void setProtocol(protocols protocol) noexcept;
+
             private:
-                unsigned short port = 80;
+                ushort port = 80;
+                protocols protocol;
             };
 
             body() = default;
             ~body() = default;
         public:
-            std::string printInfo();
             void addServer(server server);
             [[nodiscard]]const std::vector<server>& getServers() const noexcept;
 
