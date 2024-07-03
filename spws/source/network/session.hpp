@@ -5,7 +5,7 @@
 #include <boost/asio.hpp>
 
 namespace spws {
-    namespace net {
+    namespace network {
         class session : public std::enable_shared_from_this<session> {
         public:
             explicit session(boost::asio::ip::tcp::socket &&socket);

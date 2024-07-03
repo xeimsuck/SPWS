@@ -4,7 +4,7 @@
 #include <boost/asio.hpp>
 
 namespace spws {
-    namespace net {
+    namespace network {
         class server {
         public:
             server(boost::asio::io_service& service, ushort port);

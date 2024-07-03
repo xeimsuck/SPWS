@@ -7,11 +7,11 @@
 using namespace boost::asio;
 using ip::tcp;
 
-spws::net::server::server(boost::asio::io_service &_service, ushort _port) :
+spws::network::server::server(boost::asio::io_service &_service, ushort _port) :
                 service(_service), acceptor(_service, tcp::endpoint(tcp::v4(), _port)){
 }
 
-void spws::net::server::accept() {
+void spws::network::server::accept() {
     acceptor.async_accept([this](const boost::system::error_code& error, tcp::socket socket){
         if(error_handler(error)) return;
         accept_handler(error, socket);
@@ -19,7 +19,7 @@ void spws::net::server::accept() {
     });
 }
 
-int spws::net::server::error_handler(boost::system::error_code error) {
+int spws::network::server::error_handler(boost::system::error_code error) {
     if(!error) return 0;
     switch (error.value()) {
         case boost::asio::error::eof:
@@ -35,7 +35,7 @@ int spws::net::server::error_handler(boost::system::error_code error) {
     return 1;
 }
 
-void spws::net::server::accept_handler(const boost::system::error_code &error, boost::asio::ip::tcp::socket &socket) {
+void spws::network::server::accept_handler(const boost::system::error_code &error, boost::asio::ip::tcp::socket &socket) {
     if(error) throw std::runtime_error(error.what());
     std::make_shared<session>(std::move(socket))->run();
 }
