@@ -1,7 +1,8 @@
 #ifndef SPWS_CORE_APPLICATION_HPP
 #define SPWS_CORE_APPLICATION_HPP
 
-#include "config/parser.hpp"
+#include <boost/asio.hpp>
+#include "net/server.hpp"
 
 namespace spws {
     class application {
@@ -15,11 +16,15 @@ namespace spws {
         ~application() = default;
 
     public:
+        void runServers();
+        int update(const std::string& path, std::string& errorBuffer);
         int exec();
+    private:
+        void updateConfig(const std::string& path);
 
     private:
-        config::parser parser;
-        config::body base;
+        boost::asio::io_service service;
+        std::vector<net::server> servers;
     };
 }
 
