@@ -1,18 +1,20 @@
 #include "parser.hpp"
 #include <fstream>
-#include <iostream>
-#include <stack>
 #include <unordered_set>
 #include <format>
-#include <climits>
+#include <iostream>
 
 using namespace spws::config;
 
 body parser::parse(const std::string &path) {
-    return getBody(getConfig(path));
+    auto globalBlock = getGlobalBlock(getConfig(path));
+    for(decltype(auto) block : globalBlock.blocks){
+        if(block.name=="body") return getBody(block);
+    }
+    throw std::runtime_error("CONFIG ERROR: block body missed");
 }
 
-std::vector<std::string> parser::getDumb(const std::string &path) {
+std::vector<std::string> parser::getConfig(const std::string &path) {
     std::fstream in(path, std::ios::in);
     if(!in.is_open()) throw std::runtime_error(std::string("ERROR: Could not open configuration file (") + path + ")");
 
@@ -39,69 +41,44 @@ std::vector<std::string> parser::getDumb(const std::string &path) {
     dumb.pop_back();
     return dumb;
 }
-types::config parser::getConfig(const std::string &path) {
-    auto dumb = getDumb(path);
-    types::config config;
-    config.emplace_back("global", types::entries{});
-    std::stack<types::config::iterator> blocks;
-    blocks.push(config.begin());
+types::block parser::getGlobalBlock(const std::vector<std::string> &config) {
+    types::block globalBlock{.name="global", .parent=nullptr};
+    types::block* currentBlock = &globalBlock;
 
-    size_t i = 0;
-    while (i < dumb.size()){
-        const std::string word = dumb[i++];
-        if(word.empty()) continue;
-        if(word=="}") {
-            if(blocks.empty()) throw std::runtime_error("ERROR: Unnecessary braces \'}\'");
-            blocks.pop();
+    int i = 0;
+    while (i<config.size()){
+        decltype(auto) var1 = config[i++];
+        if(var1=="}"){
+            if(!currentBlock->parent) throw std::runtime_error("CONFIG ERROR: closing brace missed");
+            currentBlock = currentBlock->parent;
             continue;
         }
-        const std::string oper = dumb[i++];
+        decltype(auto) oper = config[i++];
         if(oper=="="||oper==":"){
-            std::string operand = dumb[i++];
-            blocks.top()->second.emplace_back(word, operand);
-        } else if (oper=="{") {
-            config.emplace_back(word, types::entries());
-            blocks.push(config.end()-1);
+            currentBlock->variables.emplace_back(var1, config[i++]);
+        } else if(oper=="{"){
+            currentBlock->blocks.push_back(types::block{.name=var1, .parent=currentBlock});
+            currentBlock = &currentBlock->blocks.back();
         } else {
-            throw std::runtime_error(std::format("ERROR: Unknown operator: {}",  oper));
+            throw std::runtime_error(std::format("CONFIG ERROR: unknown operator: {}", oper));
         }
     }
-    if(blocks.size()!=1) throw std::runtime_error("ERROR: Unnecessary braces \'{\'");
-    return config;
+    return globalBlock;
 }
-body parser::getBody(const types::config &config) {
-    body body;
 
-    auto itBody = config.end();
-    for(auto it = config.begin(); it!=config.end(); ++it){
-        if(it->first=="body") {
-            itBody = it;
-            continue;
-        }
-        if(it->first=="server"){
-            body::server server;
-            for(decltype(auto) itServ : it->second){
-                if(itServ.first == "port") {
-                    auto port = std::stoi(itServ.second);
-                    if(port<0 || port>USHRT_MAX) throw std::runtime_error( std::format("ERROR: Type port in range of 0 to {}", USHRT_MAX));
-                    server.setPort(static_cast<ushort>(port));
-                } else if(itServ.first == "protocol"){
-                    std::string protocol = itServ.second;
-                    std::transform(protocol.begin(), protocol.end(), protocol.begin(), [](char c){return std::tolower(c);});
-                    if(protocol=="tcp"){
-                        server.setProtocol(protocols::tcp);
-                    } else if(protocol=="udp"){
-                        server.setProtocol(protocols::udp);
-                    } else {
-                        throw std::runtime_error(std::format("ERROR: Unknown protocol: {}", itServ.second));
-                    }
-                }
-            }
-            body.addServer(server);
-        }
+body parser::getBody(const types::block &bodyBlock) {
+    config::body body;
+    for(decltype(auto) block : bodyBlock.blocks){
+        if(block.name=="server")
+            body.servers.push_back(getServer(block));
     }
-    if(itBody==config.end()) throw std::runtime_error("ERROR: No \"body\" section");
-
-
     return body;
+}
+
+body::server parser::getServer(const types::block &serverBlock) {
+    config::body::server server;
+    for(decltype(auto) variable : serverBlock.variables){
+        if(variable.name=="port") server.port = std::stoi(variable.value);
+    }
+    return server;
 }

@@ -2,7 +2,7 @@
 #define SPWS_CORE_APPLICATION_HPP
 
 #include <boost/asio.hpp>
-#include "net/server.hpp"
+#include "network/server.hpp"
 
 namespace spws {
     class application {
@@ -24,7 +24,7 @@ namespace spws {
 
     private:
         boost::asio::io_service service;
-        std::vector<net::server> servers;
+        std::vector<network::server> servers;
     };
 }
 

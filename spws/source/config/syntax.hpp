@@ -1,22 +1,24 @@
-#ifndef SPWS_CONFIG_TYPES_HPP
-#define SPWS_CONFIG_TYPES_HPP
+#ifndef SPWS_CONFIG_SYNTAX_HPP
+#define SPWS_CONFIG_SYNTAX_HPP
 
 #include <string>
-#include <utility>
 #include <vector>
 
 namespace spws {
     namespace config {
         namespace types {
-            using entry = std::pair<std::string, std::string>;
-            using entries = std::vector<entry>;
-            using section = std::pair<std::string, entries>;
-            using config = std::vector<section>;
+            struct variable {
+                std::string name;
+                std::string value;
+            };
+            struct block {
+                std::string name;
+                std::vector<variable> variables;
+                std::vector<block> blocks;
+                block* parent;
+            };
         }
-        enum class protocols {
-            tcp, udp
-        };
     }
 }
 
-#endif //SPWS_CONFIG_TYPES_HPP
+#endif //SPWS_CONFIG_SYNTAX_HPP

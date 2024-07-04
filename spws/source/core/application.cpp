@@ -36,8 +36,8 @@ void application::updateConfig(const std::string &path) {
     auto body = parser::parse(path);
 
     typeof(servers) tempServers;
-    for(decltype(auto) serverConfig : body.getServers()){
-        tempServers.emplace_back(service, serverConfig.getPort());
+    for(decltype(auto) serverConfig : body.servers){
+        tempServers.emplace_back(service, serverConfig.port);
     }
     servers = std::move(tempServers);
 }
