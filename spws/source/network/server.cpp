@@ -7,8 +7,10 @@
 using namespace boost::asio;
 using ip::tcp;
 
-spws::network::server::server(boost::asio::io_service &_service, ushort _port) :
-                service(_service), acceptor(_service, tcp::endpoint(tcp::v4(), _port)){
+spws::network::server::server(boost::asio::io_service &_service, ushort _port,
+                              const std::unordered_map<std::string, std::string>& _targets) :
+                service(_service), acceptor(_service, tcp::endpoint(tcp::v4(), _port)),
+                targets(_targets){
 }
 
 void spws::network::server::accept() {

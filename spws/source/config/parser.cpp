@@ -2,7 +2,6 @@
 #include <fstream>
 #include <unordered_set>
 #include <format>
-#include <iostream>
 
 using namespace spws::config;
 
@@ -60,7 +59,10 @@ types::block parser::getGlobalBlock(const std::vector<std::string> &config) {
             currentBlock->blocks.push_back(types::block{.name=var1, .parent=currentBlock});
             currentBlock = &currentBlock->blocks.back();
         } else {
-            throw std::runtime_error(std::format("CONFIG ERROR: unknown operator: {}", oper));
+            if(config[i++]!="{") throw std::runtime_error(std::format("CONFIG ERROR: unknown operator: {}", oper));
+            currentBlock->blocks.push_back(types::block{.name=var1, .parent=currentBlock});
+            currentBlock = &currentBlock->blocks.back();
+            currentBlock->variables.emplace_back(var1, oper);
         }
     }
     return globalBlock;
@@ -80,5 +82,16 @@ body::server parser::getServer(const types::block &serverBlock) {
     for(decltype(auto) variable : serverBlock.variables){
         if(variable.name=="port") server.port = std::stoi(variable.value);
     }
+    for(decltype(auto) block : serverBlock.blocks){
+        if(block.name=="target") server.targets[block.variables.front().value] = getTarget(block);
+    }
     return server;
+}
+
+body::server::target parser::getTarget(const types::block &targetBlock) {
+    body::server::target target;
+    for (decltype(auto) variable : targetBlock.variables) {
+        if(variable.name=="root") target.root = variable.value;
+    }
+    return target;
 }

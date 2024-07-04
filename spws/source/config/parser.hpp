@@ -17,6 +17,7 @@ namespace spws {
 
             static body getBody(const types::block& bodyBlock);
             static body::server getServer(const types::block& serverBlock);
+            static body::server::target getTarget(const types::block& targetBlock);
         };
     }
 }

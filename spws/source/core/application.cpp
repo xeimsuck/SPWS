@@ -37,7 +37,12 @@ void application::updateConfig(const std::string &path) {
 
     typeof(servers) tempServers;
     for(decltype(auto) serverConfig : body.servers){
-        tempServers.emplace_back(service, serverConfig.port);
+        std::unordered_map<std::string, std::string> target;
+        target["/"] = "/var/www";
+        for(decltype(auto) servTarget : serverConfig.targets){
+            target[servTarget.first]=servTarget.second.root;
+        }
+        tempServers.emplace_back(service, serverConfig.port, target);
     }
     servers = std::move(tempServers);
 }
