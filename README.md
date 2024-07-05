@@ -1,4 +1,4 @@
-# SPWS v0.2 (beta)
+# SPWS v1.0
 ## About 
 SPWS is simple web server. Suitable for hosting your portfolio in the internet.  
 The web server is being configures in spws.conf file, usually located in "/usr/local/etc/spws/spws.conf".
@@ -9,12 +9,12 @@ Example:
 ```config
 body {
     server {
-        port 80
+        port: 80
         target / {
-            /var/www
+            root: /var/www
         }
         target /images/ {
-            /var/www/data
+            root: /var/www/data
         }
     }
 }

@@ -39,5 +39,5 @@ int spws::network::server::error_handler(boost::system::error_code error) {
 
 void spws::network::server::accept_handler(const boost::system::error_code &error, boost::asio::ip::tcp::socket &socket) {
     if(error) throw std::runtime_error(error.what());
-    std::make_shared<session>(std::move(socket), cache)->run();
+    std::make_shared<session>(std::move(socket), cache, targets)->run();
 }
