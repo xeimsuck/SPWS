@@ -2,8 +2,8 @@
 #define SPWS_NET_SERVER_HPP
 
 #include <boost/asio.hpp>
-#include <vector>
-#include <utility>
+#include <unordered_map>
+#include "network/cache.hpp"
 
 namespace spws {
     namespace network {
@@ -22,7 +22,7 @@ namespace spws {
         private:
             boost::asio::io_service& service;
             boost::asio::ip::tcp::acceptor acceptor;
-
+            network::cache cache;
             std::unordered_map<std::string, std::string> targets;
         };
     }

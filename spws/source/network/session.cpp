@@ -1,8 +1,12 @@
 #include "session.hpp"
 #include <iostream>
+#include <boost/beast.hpp>
 
-spws::network::session::session(boost::asio::ip::tcp::socket &&socket) :
-                    socket(std::move(socket)) {
+using namespace boost::beast;
+
+spws::network::session::session(boost::asio::ip::tcp::socket &&_socket,
+                                network::cache& _serverCache) :
+                    socket(std::move(_socket)), serverCache(_serverCache) {
 }
 
 void spws::network::session::run() {
@@ -20,6 +24,7 @@ void spws::network::session::listen() {
 }
 
 void spws::network::session::request(const std::size_t size) {
+    http::request<http::string_body> req(buffer, buffer.size()daw);
     std::string str = "HTTP/1.1 200 OK\nContent-Type: text/html\r\nContent-Length: 52\r\n\r\n<html><head></head><body><h1>SPWS</h1></body></html>";
     boost::asio::write(socket, boost::asio::buffer(str));
     buffer.consume(buffer.size());

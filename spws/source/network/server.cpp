@@ -1,7 +1,7 @@
 #include "server.hpp"
 
 #include <iostream>
-#include <memory>
+#include <boost/beast.hpp>
 #include "session.hpp"
 
 using namespace boost::asio;
@@ -39,5 +39,5 @@ int spws::network::server::error_handler(boost::system::error_code error) {
 
 void spws::network::server::accept_handler(const boost::system::error_code &error, boost::asio::ip::tcp::socket &socket) {
     if(error) throw std::runtime_error(error.what());
-    std::make_shared<session>(std::move(socket))->run();
+    std::make_shared<session>(std::move(socket), cache)->run();
 }
